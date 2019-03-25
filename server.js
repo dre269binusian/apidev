@@ -47,7 +47,7 @@ app.post("/api/visitors", function (request, response) {
  * </code>
  *
  * Response:
- * [ "Bob", "Jane" ]
+ * [ "Bob", "Jane", "nisa" ]
  * @return An array of all the visitor names
  */
 app.get("/api/visitors", function (request, response) {
