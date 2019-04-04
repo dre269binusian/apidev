@@ -146,6 +146,60 @@ app.post('/login', (req, res, next) => {
       })
 });
 
+app.get('/', (req, res) => {
+  db.any('SELECT * FROM kategori')
+      .then(function (data) {
+        res.send({
+          "status" : 200,
+          "result" : data
+        })
+        // console.log(data);
+
+      })
+      .catch(function (error) {
+        // res.send('asds')
+        console.log('aaaaa');
+      })
+})
+
+app.post('/transaksi',(req,res)=>{
+  const { id_user, total, id_transaksi, id_event, seat_booking, sub_total_price } = req.body
+  const created_at = new Date();
+  const id_user_new = parseInt(id_user);
+  const total_new = parseInt(total)
+  const id_transaksi_new = parseInt(id_transaksi);
+  const id_event_new = parseInt(id_event);
+  const seat_booking_new = parseInt(seat_booking);
+  const sub_total_price_new = parseInt(sub_total_price);
+  db.task('my-task',t=>{
+    return t.any('INSERT INTO transaksi_detail(id_transaksi,id_event,seat_booking,sub_total_price) VALUES($1,$2,$3,$4)',[id_transaksi_new,id_event_new,seat_booking_new,sub_total_price_new])
+    .then((result)=>{
+      return t.any('INSERT INTO transaksi(id_user,total,created_at) VALUES($1,$2,$3)',[id_user_new,total_new,created_at])
+    });
+  }).then(data=>{
+    res.status(200).json({
+      status:200,
+      message:'berhasil memasukkan data ' + data
+    })
+  }).catch(e=>res.status(200).json({
+    e,
+    message:'gagal memasukkan data'
+  }))
+})
+
+app.get('/transaksi',(req,res)=>{
+  db.any('SELECT * FROM transaksi_detail')
+  .then(data=>{
+    res.status(200).json({
+      status:200,
+      result:data
+    })
+  }).catch(e=>res.status(200).json({
+    e,
+    message:'terjadi error'
+  }))
+})
+
 
 var port = process.env.PORT || 3000
 app.listen(port, function() {
