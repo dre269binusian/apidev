@@ -2,8 +2,10 @@ var express = require("express");
 var app = express();
 var cfenv = require("cfenv");
 var bodyParser = require('body-parser');
-var pgp = require('pg-promise')(/*options*/)
-var db = pgp('postgres://fefzxjzs:5Rr7c1mU1Sb8y4ec6oaNOqHliSWcpJKb@isilo.db.elephantsql.com:5432/fefzxjzs')
+var pgp = require('pg-promise')(/*options*/);
+var db = pgp('postgres://fefzxjzs:5Rr7c1mU1Sb8y4ec6oaNOqHliSWcpJKb@isilo.db.elephantsql.com:5432/fefzxjzs');
+var md5 = require('md5');
+// var login = require('./controllers/LoginController');
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -19,25 +21,25 @@ var cloudant, mydb;
 * 	"name": "Bob"
 * }
 */
-app.post("/api/visitors", function (request, response) {
-  var userName = request.body.name;
-  var doc = { "name" : userName };
-  if(!mydb) {
-    console.log("No database.");
-    response.send(doc);
-    return;
-  }
-  // insert the username as a document
-  mydb.insert(doc, function(err, body, header) {
-    if (err) {
-      console.log('[mydb.insert] ', err.message);
-      response.send("Error");
-      return;
-    }
-    doc._id = body.id;
-    response.send(doc);
-  });
-});
+// app.post("/api/visitors", function (request, response) {
+//   var userName = request.body.name;
+//   var doc = { "name" : userName };
+//   if(!mydb) {
+//     console.log("No database.");
+//     response.send(doc);
+//     return;
+//   }
+//   // insert the username as a document
+//   mydb.insert(doc, function(err, body, header) {
+//     if (err) {
+//       console.log('[mydb.insert] ', err.message);
+//       response.send("Error");
+//       return;
+//     }
+//     doc._id = body.id;
+//     response.send(doc);
+//   });
+// });
 
 /**
  * Endpoint to get a JSON array of all the visitors in the database
@@ -50,23 +52,23 @@ app.post("/api/visitors", function (request, response) {
  * [ "Bob", "Jane", "nisa", "lala" ]
  * @return An array of all the visitor names
  */
-app.get("/api/visitors", function (request, response) {
-  var names = [];
-  if(!mydb) {
-    response.json(names);
-    return;
-  }
-
-  mydb.list({ include_docs: true }, function(err, body) {
-    if (!err) {
-      body.rows.forEach(function(row) {
-        if(row.doc.name)
-          names.push(row.doc.name);
-      });
-      response.json(names);
-    }
-  });
-});
+// app.get("/api/visitors", function (request, response) {
+//   var names = [];
+//   if(!mydb) {
+//     response.json(names);
+//     return;
+//   }
+//
+//   mydb.list({ include_docs: true }, function(err, body) {
+//     if (!err) {
+//       body.rows.forEach(function(row) {
+//         if(row.doc.name)
+//           names.push(row.doc.name);
+//       });
+//       response.json(names);
+//     }
+//   });
+// });
 
 
 // load local VCAP configuration  and service credentials
@@ -112,6 +114,18 @@ if(cloudant) {
 //serve static file (index.html, images, css)
 // app.use(express.static(__dirname + '/views'));
 
+
+/**
+ * Endpoint to get a JSON array of all the visitors in the database
+ * REST API example:
+ * <code>
+ * GET http://localhost:3000/kategori
+ * </code>
+ *
+ * Response:
+ * [ "Bob", "Jane", "nisa", "lala" ]
+ * @return An array of all the visitor names
+ */
 app.get('/', (req, res) => {
   db.any('SELECT * FROM kategori')
       .then(function (data) {
@@ -126,7 +140,66 @@ app.get('/', (req, res) => {
         // res.send('asds')
         console.log('aaaaa');
       })
-})
+});
+
+/**
+ * Endpoint to get a JSON array of all the visitors in the database
+ * REST API example:
+ * <code>
+ * GET http://localhost:3000/event
+ * </code>
+ *
+ * Response:
+ * [ "Bob", "Jane", "nisa", "lala" ]
+ * @return An array of all the visitor names
+ */
+app.get('/event', (req, res) => {
+  db.any('SELECT * FROM event')
+      .then(function (data) {
+        res.send({
+          "status" : 200,
+          "result" : data
+        })
+        // console.log(data);
+      })
+      .catch(function (error) {
+        console.log('event kosong');
+      })
+});
+
+// app.use('/login', login);
+
+
+app.post('/login', (req, res, next) => {
+  let status = 200, error = null;
+  let dataLoginNya = {
+    email: req.body.email,
+    password: md5(req.body.password)
+  }
+
+  if(!req.body.email){
+    status = 422;
+    error = 'Email kosong';
+  }
+
+  if(!req.body.password){
+    status = 422;
+    error = 'Password kosong';
+  }
+
+
+  let sql = 'SELECT * FROM users WHERE email = ${email} AND password = ${password}';
+  db.any(sql, dataLoginNya)
+      .then(function (data) {
+        res.send({
+          "status" : 200,
+          "result" : data
+        })
+      })
+      .catch(function (error) {
+        console.log(dataLoginNya);
+      })
+});
 
 
 var port = process.env.PORT || 3000
