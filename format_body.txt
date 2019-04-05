@@ -1,0 +1,8 @@
+{
+    "id_user"://string,
+    "total"://string,
+    "id_transaksi"://string,
+    "id_event"://string,
+    "seat_booking"://string,
+    "sub_total_price":,//string
+}
