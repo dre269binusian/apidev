@@ -13,52 +13,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-// var cloudant, mydb;
-
-
-// load local VCAP configuration  and service credentials
-// var vcapLocal;
-// try {
-//   vcapLocal = require('./vcap-local.json');
-//   console.log("Loaded local VCAP", vcapLocal);
-// } catch (e) { }
-//
-// const appEnvOpts = vcapLocal ? { vcap: vcapLocal} : {}
-
-// const appEnv = cfenv.getAppEnv(appEnvOpts);
-
-// Load the Cloudant library.
-// var Cloudant = require('@cloudant/cloudant');
-// if (appEnv.services['cloudantNoSQLDB'] || appEnv.getService(/cloudant/)) {
-//
-//   // Initialize database with credentials
-//   if (appEnv.services['cloudantNoSQLDB']) {
-//     // CF service named 'cloudantNoSQLDB'
-//     cloudant = Cloudant(appEnv.services['cloudantNoSQLDB'][0].credentials);
-//   } else {
-//      // user-provided service with 'cloudant' in its name
-//      cloudant = Cloudant(appEnv.getService(/cloudant/).credentials);
-//   }
-// } else if (process.env.CLOUDANT_URL){
-//   cloudant = Cloudant(process.env.CLOUDANT_URL);
-// }
-// if(cloudant) {
-//   //database name
-//   var dbName = 'mydb';
-//
-//   // Create a new "mydb" database.
-//   cloudant.db.create(dbName, function(err, data) {
-//     if(!err) //err if database doesn't already exists
-//       console.log("Created database: " + dbName);
-//   });
-//
-//   // Specify the database we are going to use (mydb)...
-//   mydb = cloudant.db.use(dbName);
-// }
-
-//serve static file (index.html, images, css)
-// app.use(express.static(__dirname + '/views'));
-
 
 /**
  * Endpoint to get a JSON array of all the kategori in the database
@@ -99,16 +53,15 @@ app.get('/', (req, res) => {
  * @return An array of all the event list
  */
 app.get('/event', (req, res) => {
-  db.any('SELECT * FROM event')
+  db.any('SELECT event.id, event.nama, event.description, event.price, event.foto, event.uri, event.lokasi,  event.available_seat, TO_CHAR(event.tanggal :: DATE, \'dd Mon yyyy\') as tanggal FROM event')
       .then(function (data) {
         res.send({
           "status" : 200,
           "result" : data
         })
-        // console.log(data);
       })
       .catch(function (error) {
-        console.log('event kosong');
+        console.log('Event kosong ...');
       })
 });
 
@@ -153,13 +106,23 @@ app.get('/', (req, res) => {
           "status" : 200,
           "result" : data
         })
-        // console.log(data);
-
       })
       .catch(function (error) {
-        // res.send('asds')
-        console.log('aaaaa');
+        console.log('Kategori Kosong ...');
       })
+});
+
+app.get('/agenda', (req, res) => {
+    db.any('SELECT * FROM agenda')
+        .then(function (data) {
+            res.send({
+                "status" : 200,
+                "result" : data
+            })
+        })
+        .catch(function (error) {
+            console.log('Agenda Kosong ...');
+        })
 })
 
 app.post('/transaksi',(req,res)=>{
@@ -174,13 +137,21 @@ app.post('/transaksi',(req,res)=>{
   db.task('my-task',t=>{
     return t.any('INSERT INTO transaksi(id_user,total,created_at) VALUES($1,$2,$3)',[id_user_new,total_new,created_at])
     .then(()=>{
+<<<<<<< HEAD
       return t.any('SELECT max(id) from transaksi where id_user=$1',[id_user_new]).then(result=>  {return id_transaksi_new = result[0].max}).catch(e=>console.log(e))
+=======
+      return t.any('SELECT id from transaksi where id_user=$1',[id_user_new]).then(result=>  {return id_transaksi_new = result[0].id}).catch(e=>console.log(e))
+>>>>>>> f706b1c85f76d2a660baea1d80b1b19e78d4060a
     }).then(()=>{
       return t.any('UPDATE event SET available_seat=available_seat-$1',[seat_booking_new]).then(result=>console.log(`mantap`)).catch(e=>console.log(e))
     }).then(()=>{
       return t.any('UPDATE users SET saldo=saldo-$1 where id=$2',[total_new,id_user_new]).then(result=>console.log(`mantap`)).catch(e=>console.log(e))
     }).then(()=>{
+<<<<<<< HEAD
       return t.any('INSERT INTO transaksi_detail(id_transaksi,id_event,seat_booking,sub_total_price) VALUES($1,$2,$3,$4)',[id_transaksi_new,id_event_new,seat_booking_new,sub_total_price_new]).then(result=>console.log(`mantap udah masuk ke transaksi detail`)).catch(e=>console.log(e))
+=======
+      return t.any('INSERT INTO transaksi_detail(id_transaksi,id_event,seat_booking,sub_total_price) VALUES($1,$2,$3,$4)',[id_transaksi_new,id_event_new,seat_booking_new,sub_total_price_new])
+>>>>>>> f706b1c85f76d2a660baea1d80b1b19e78d4060a
     })
   }).then(data=>{
     res.status(200).json({
@@ -194,7 +165,11 @@ app.post('/transaksi',(req,res)=>{
 })
 
 app.get('/transaksi',(req,res)=>{
+<<<<<<< HEAD
   db.any('SELECT * FROM transaksi')
+=======
+  db.any('SELECT * FROM users')
+>>>>>>> f706b1c85f76d2a660baea1d80b1b19e78d4060a
   .then(data=>{
     res.status(200).json({
       status:200,
@@ -213,8 +188,11 @@ app.get('/history',(req,res)=>{
   .catch(e=>console.log(e))
 })
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> f706b1c85f76d2a660baea1d80b1b19e78d4060a
 
 var port = process.env.PORT || 3000
 app.listen(port, function() {
