@@ -99,13 +99,12 @@ app.get('/', (req, res) => {
  * @return An array of all the event list
  */
 app.get('/event', (req, res) => {
-  db.any('SELECT * FROM event')
+  db.any('SELECT event.id, event.nama, event.description, event.price, event.foto, event.uri, event.lokasi,  event.available_seat, TO_CHAR(event.tanggal :: DATE, \'dd Mon yyyy\') as tanggal FROM event')
       .then(function (data) {
         res.send({
           "status" : 200,
           "result" : data
         })
-        // console.log(data);
       })
       .catch(function (error) {
         console.log('event kosong');
