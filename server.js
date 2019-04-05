@@ -142,18 +142,20 @@ app.post('/transaksi',(req,res)=>{
   db.task('my-task',t=>{
     return t.any('INSERT INTO transaksi(id_user,total,created_at) VALUES($1,$2,$3)',[id_user_new,total_new,created_at])
     .then(()=>{
-      return t.any('SELECT id from transaksi where id_user=$1',[id_user_new]).then(result=>  {return id_transaksi_new = result[0].id}).catch(e=>console.log(e))
+      return t.any('SELECT max(id) from transaksi where id_user=$1',[id_user_new]).then(result=>  {return id_transaksi_new = result[0].max}).catch(e=>console.log(e))
     }).then(()=>{
       return t.any('UPDATE event SET available_seat=available_seat-$1',[seat_booking_new]).then(result=>console.log(`mantap`)).catch(e=>console.log(e))
     }).then(()=>{
       return t.any('UPDATE users SET saldo=saldo-$1 where id=$2',[total_new,id_user_new]).then(result=>console.log(`mantap`)).catch(e=>console.log(e))
     }).then(()=>{
-      return t.any('INSERT INTO transaksi_detail(id_transaksi,id_event,seat_booking,sub_total_price) VALUES($1,$2,$3,$4)',[id_transaksi_new,id_event_new,seat_booking_new,sub_total_price_new])
+
+      return t.any('INSERT INTO transaksi_detail(id_transaksi,id_event,seat_booking,sub_total_price) VALUES($1,$2,$3,$4)',[id_transaksi_new,id_event_new,seat_booking_new,sub_total_price_new]).then(result=>console.log(`mantap udah masuk ke transaksi detail`)).catch(e=>console.log(e))
+
     })
   }).then(data=>{
     res.status(200).json({
       status:200,
-      message:'berhasil memasukkan data ' + data
+      message:'berhasil memasukkan data'
     })
   }).catch(e=>res.status(200).json({
     e,
@@ -162,7 +164,20 @@ app.post('/transaksi',(req,res)=>{
 })
 
 app.get('/transaksi',(req,res)=>{
-  db.any('SELECT * FROM users')
+  db.any('SELECT * FROM transaksi')
+  .then(data=>{
+    res.status(200).json({
+      status:200,
+      result:data
+    })
+  }).catch(e=>res.status(200).json({
+    e,
+    message:'terjadi error'
+  }))
+})
+
+app.get('/transaksi_detail',(req,res)=>{
+  db.any('SELECT * FROM transaksi_detail')
   .then(data=>{
     res.status(200).json({
       status:200,
