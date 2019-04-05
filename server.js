@@ -150,7 +150,7 @@ app.post('/transaksi',(req,res)=>{
   }).then(data=>{
     res.status(200).json({
       status:200,
-      message:'berhasil memasukkan data ' + data
+      message:'berhasil memasukkan data'
     })
   }).catch(e=>res.status(200).json({
     e,
