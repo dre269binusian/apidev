@@ -200,8 +200,9 @@ app.get('/transaksi_detail',(req,res)=>{
   }))
 })
 
-app.get('/history',(req,res)=>{
-  const email = req.body.email;
+app.get('/history',(req,res,next)=>{
+  const email = req.query.email;
+  // console.log(email);
   db.any('select transaksi.id, transaksi_detail.id_event, event.nama, transaksi_detail.seat_booking, transaksi.created_at from transaksi join transaksi_detail on transaksi.id = transaksi_detail.id_transaksi join event on event.id = transaksi_detail.id_event join users on users.id = transaksi.id_user where users.email =$1',[email])
   .then(result=>res.status(200).json({result,message:'inilah dia'}))
   .catch(e=>console.log(e))
