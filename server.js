@@ -34,8 +34,7 @@ app.get('/', (req, res) => {
   db.any('SELECT * FROM kategori')
       .then(function (data) {
         res.send({
-          "status" : 200,
-          "result" : data
+          "data" : data
         })
         // console.log(data);
 
@@ -68,6 +67,18 @@ app.get('/event', (req, res) => {
       .catch(function (error) {
         console.log('Event kosong ...');
       })
+});
+
+app.get('/eventlist', (req, res) => {
+    db.any('SELECT event.id, event.nama, event.description, event.price, event.foto, event.uri, event.lokasi,  event.available_seat, TO_CHAR(event.tanggal :: DATE, \'dd Mon yyyy\') as tanggal FROM event')
+        .then(function (data) {
+            res.send({
+                "data" : data
+            })
+        })
+        .catch(function (error) {
+            console.log('Event kosong ...');
+        })
 });
 
 // app.use('/login', login);
