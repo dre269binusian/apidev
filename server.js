@@ -81,8 +81,21 @@ app.get('/eventlist', (req, res) => {
         })
 });
 
-// app.use('/login', login);
 
+app.get('/eventreq', (req, res, next) => {
+    db.any('select t.id, u.nama as nama_mhs, t.total, e.nama, t.created_at from transaksi as t \n' +
+        'left join transaksi_detail as td ON td.id_transaksi = t.id \n' +
+        'left join users as u ON u.id = t.id_user \n' +
+        'left join event as e ON e.id = td.id_event')
+        .then(function (data) {
+            res.send({
+                "data" : data
+            })
+        })
+        .catch(function (error) {
+            console.log('Event kosong ...');
+        })
+});
 
 app.post('/login', (req, res, next) => {
   let status = 200, error = null;
